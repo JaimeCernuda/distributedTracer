@@ -3,41 +3,40 @@
 #include <thread>
 #include "Tracer.h"
 
-void deepFunction(int rank) {
-    TRACE_FUNC(rank);
+void deepFunction() {
+    TRACE_FUNC();
     std::this_thread::sleep_for(std::chrono::seconds(1)); // Simulate work
 }
 
-void nestedFunction(int rank) {
-    TRACE_FUNC(rank);
+void nestedFunction() {
+    TRACE_FUNC();
     std::this_thread::sleep_for(std::chrono::milliseconds(500)); // Simulate work
-    deepFunction(rank);
+    deepFunction();
 }
 
-void parallelFunction(int rank, int id) {
-    TRACE_FUNC(rank);
+void parallelFunction(int id) {
+    TRACE_FUNC();
     std::this_thread::sleep_for(std::chrono::milliseconds(200 * id)); // Simulate work
 }
 
-void someFunction(int rank) {
-    TRACE_FUNC(rank);
-    nestedFunction(rank);
+void someFunction() {
+    TRACE_FUNC();
+    nestedFunction();
     for (int i = 0; i < 3; ++i) {
-        parallelFunction(rank, i);
+        parallelFunction(i);
     }
 }
 
 int main(int argc, char **argv) {
     MPI_Init(&argc, &argv);
-
-    INIT_TRACE();
-
-    int rank;
+    static int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    someFunction(rank);
+    INIT_TRACE_MANAGER();
+
+    someFunction();
     if (rank == 0) {
-        nestedFunction(rank);
+        nestedFunction();
     }
 
     MPI_Finalize();

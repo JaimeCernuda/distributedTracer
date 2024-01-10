@@ -9,28 +9,59 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <thread>
 #include <string>
-#include <memory>
-#include <mpi.h>
 #include <sstream>
 
-class TraceLogger;
+#ifdef MPI_VERSION
+#include <mpi.h>
 
-// Global variable for the trace logger
-inline std::shared_ptr<spdlog::logger> traceLogger = nullptr;
+#define INIT_TRACE_MANAGER() \
+    static int _traceRank;   \
+    MPI_Comm_rank(MPI_COMM_WORLD, &_traceRank); \
+    TraceManager traceManager(_traceRank);
 
-#define TRACE_FUNC(rank) TraceLogger traceLoggerInstance(__FUNCTION__, rank)
-#define INIT_TRACE() initTraceLogger()
+#define TRACE_FUNC() \
+    static int _traceRank;   \
+    MPI_Comm_rank(MPI_COMM_WORLD, &_traceRank); \
+    TraceLogger traceLogger(__func__, _traceRank)
 
-void initTraceLogger() {
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    traceLogger = spdlog::basic_logger_mt("trace_logger", "trace_" + std::to_string(rank) + ".json");
-}
+#else
+#define INIT_TRACE_MANAGER(_traceRank) \
+    TraceManager traceManager(_traceRank);
+
+#define TRACE_FUNC(_traceRank) \
+    TraceLogger traceLogger(__func__, _traceRank)
+#endif
+
+
+class TraceManager {
+public:
+    explicit TraceManager(int rank){
+        std::string fileName = "trace_" + std::to_string(rank) + ".json";
+        spdlog::basic_logger_mt("trace_logger", fileName);
+
+        auto log = spdlog::get("trace_logger");
+        log->set_pattern(entryPattern);
+        log->info("");
+        log->set_pattern(jsonPattern);
+    }
+
+    ~TraceManager() {
+        auto log = spdlog::get("trace_logger");
+        log->set_pattern(exitPattern);
+        log->info("");
+        spdlog::drop("trace_logger");
+    }
+
+private:
+    std::string entryPattern = {"[\n"};
+    std::string exitPattern = {"\n]"};
+    std::string jsonPattern = {"{%v},\n"};
+};
 
 class TraceLogger {
 public:
-    TraceLogger(const std::string &functionName, int mpiRank)
-            : functionName_(functionName), mpiRank_(mpiRank), startTime_(std::chrono::high_resolution_clock::now()) {
+    TraceLogger(std::string functionName, int rank)
+            : functionName_(std::move(functionName)), rank_(rank) {
         logEvent("B"); // "B" for Begin
     }
 
@@ -40,25 +71,29 @@ public:
 
 private:
     std::string functionName_;
-    int mpiRank_;
-    std::chrono::high_resolution_clock::time_point startTime_;
+    int rank_;
 
     void logEvent(const std::string &phase) {
-        auto timestamp = std::chrono::duration_cast<std::chrono::microseconds>(
-                std::chrono::high_resolution_clock::now() - startTime_).count();
-        std::thread::id threadId = std::this_thread::get_id();
+        auto now = std::chrono::high_resolution_clock::now();
+        auto duration = now.time_since_epoch();
+        auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
 
-        // Convert threadId to string
-        std::ostringstream threadIdStream;
-        threadIdStream << threadId;
-        std::string threadIdStr = threadIdStream.str();
+        std::stringstream ss;
+        ss << std::this_thread::get_id();
+        std::string threadID = ss.str();
 
-        if (traceLogger) {
-            traceLogger->info("{{\"name\": \"{}\", \"ph\": \"{}\", \"ts\": {}, \"pid\": {}, \"tid\": \"{}\"}}",
-                              functionName_, phase, timestamp, mpiRank_, threadIdStr);
-        }
+        std::string logEntry = "\"name\": \"" + functionName_
+                               + "\", \"ph\": \"" + phase
+                               + "\", \"ts\": " + std::to_string(nanos)
+                               + ", \"pid\": " + std::to_string(rank_)
+                               + ", \"tid\": " + threadID
+                               + "";
+
+        auto log = spdlog::get("trace_logger");
+        log->info(logEntry);
     }
 };
+
 
 #endif //DISTRIBUTEDTRACER_TRACER_H
 
