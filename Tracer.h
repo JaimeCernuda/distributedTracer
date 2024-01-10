@@ -74,10 +74,9 @@ private:
     int rank_;
 
     void logEvent(const std::string &phase) {
-        auto now = std::chrono::high_resolution_clock::now();
+        auto now = std::chrono::system_clock::now();
         auto duration_since_epoch = now.time_since_epoch();
         auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(duration_since_epoch).count();
-
         std::stringstream ss;
         ss << std::this_thread::get_id();
         std::string threadID = ss.str();
