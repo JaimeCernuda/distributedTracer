@@ -54,9 +54,9 @@ public:
     }
 
 private:
-    std::string entryPattern = {"[\n"};
-    std::string exitPattern = {"\n]"};
-    std::string jsonPattern = {"{%v},\n"};
+    std::string entryPattern = {"["};
+    std::string exitPattern = {"]"};
+    std::string jsonPattern = {"{%v},"};
 };
 
 class TraceLogger {
