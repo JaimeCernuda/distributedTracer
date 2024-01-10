@@ -37,7 +37,8 @@ class TraceManager {
 public:
     explicit TraceManager(int rank){
         std::string fileName = "trace_" + std::to_string(rank) + ".json";
-        spdlog::basic_logger_mt("trace_logger", fileName);
+        auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(fileName, true); // true for overwrite mode
+        std::make_shared<spdlog::logger>("trace_logger", file_sink);
 
         auto log = spdlog::get("trace_logger");
         log->set_pattern(entryPattern);
