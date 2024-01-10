@@ -75,8 +75,8 @@ private:
 
     void logEvent(const std::string &phase) {
         auto now = std::chrono::high_resolution_clock::now();
-        auto duration = now.time_since_epoch();
-        auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
+        auto duration_since_epoch = now.time_since_epoch();
+        auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(duration_since_epoch).count();
 
         std::stringstream ss;
         ss << std::this_thread::get_id();
@@ -84,7 +84,7 @@ private:
 
         std::string logEntry = "\"name\": \"" + functionName_
                                + "\", \"ph\": \"" + phase
-                               + "\", \"ts\": " + std::to_string(nanos)
+                               + "\", \"ts\": " + std::to_string(microseconds)
                                + ", \"pid\": " + std::to_string(rank_)
                                + ", \"tid\": " + threadID
                                + "";
