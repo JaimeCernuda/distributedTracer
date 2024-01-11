@@ -14,13 +14,27 @@ def parse_args():
 def fix_json_file(file_name):
     try:
         with open(file_name, 'r') as file:
-            content = file.read().rstrip(',\n')  # Remove trailing comma and newlines
+            lines = file.readlines()
 
-        if not content.endswith(']'):
-            content += ']'
+        if lines[-1] != "]":
+            lines.append("]")
 
+        last_comma_index = lines[-2].rfind(',')
+        if last_comma_index == len(lines[-2]) - 2:
+            lines[-2] = lines[-2][:last_comma_index] + lines[-2][last_comma_index + 1:]
+
+        content = ''.join(lines).rstrip()
+
+        # Validate the modified JSON content
+        try:
+            json.loads(content)  # This will raise an error if content is not valid JSON
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Content is not valid JSON after modification: {e}")
+
+        # Write the validated content back to the file
         with open(file_name, 'w') as file:
             file.write(content)
+
     except Exception as e:
         print(f"Error processing file {file_name}: {e}")
 

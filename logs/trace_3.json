@@ -1,0 +1,14 @@
+[
+{"name": "someFunction", "ph": "B", "ts": 1704911562810859, "pid": 3, "tid": 140070946896768},
+{"name": "nestedFunction", "ph": "B", "ts": 1704911562810951, "pid": 3, "tid": 140070946896768},
+{"name": "deepFunction", "ph": "B", "ts": 1704911563311122, "pid": 3, "tid": 140070946896768},
+{"name": "deepFunction", "ph": "E", "ts": 1704911564311554, "pid": 3, "tid": 140070946896768},
+{"name": "nestedFunction", "ph": "E", "ts": 1704911564311591, "pid": 3, "tid": 140070946896768},
+{"name": "parallelFunction", "ph": "B", "ts": 1704911564311598, "pid": 3, "tid": 140070946896768},
+{"name": "parallelFunction", "ph": "E", "ts": 1704911564311603, "pid": 3, "tid": 140070946896768},
+{"name": "parallelFunction", "ph": "B", "ts": 1704911564311608, "pid": 3, "tid": 140070946896768},
+{"name": "parallelFunction", "ph": "E", "ts": 1704911564511824, "pid": 3, "tid": 140070946896768},
+{"name": "parallelFunction", "ph": "B", "ts": 1704911564511857, "pid": 3, "tid": 140070946896768},
+{"name": "parallelFunction", "ph": "E", "ts": 1704911564911982, "pid": 3, "tid": 140070946896768},
+{"name": "someFunction", "ph": "E", "ts": 1704911564912001, "pid": 3, "tid": 140070946896768}
+]
