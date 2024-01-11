@@ -12,7 +12,7 @@ Initialize the trace manager at the start of your program with INIT_TRACE_MANAGE
 Use TRACE_FUNC() within functions to log their execution.
 If linking to MPI, all functions will get their rank from the COMM_WORLD
 If no MPI is available, the macros must take an integer to indicate their rank
-The log is written on a per process basis, so unique ranks are important or the processes will interfere with each other.
+The log is written on a per-process basis, so unique ranks are important or the processes will interfere with each other.
 
 Example:
 
